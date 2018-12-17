@@ -23,7 +23,10 @@ public class Test {
         byte[] data = DigestUtils.md5(dataStr);
 
         //此处建议随机(注意是16进制)
-        byte[] rand 	=  	hex2Bytes("000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        //byte[] rand 	=  	hex2Bytes("000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+
+        String hex = randomHexString(42);
+        byte[] rand 	=  	hex2Bytes(hex);
 
         BigInteger[] sig = Bouncycastle_Secp256k1.sig(data, pri, rand);
         String sign= sig[0].toString(16) + sig[1].toString(16);
@@ -69,4 +72,20 @@ public class Test {
         return bytes;
     }
 
+    public static String randomHexString(int len)  {
+        try {
+            StringBuffer result = new StringBuffer();
+            for(int i=0;i<len;i++) {
+                result.append(Integer.toHexString(new Random().nextInt(16)));
+            }
+            return result.toString().toUpperCase();
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.printStackTrace();
+
+        }
+        return null;
+
+    }
 }
