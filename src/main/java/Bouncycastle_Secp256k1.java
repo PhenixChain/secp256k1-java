@@ -1,11 +1,5 @@
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
-
-
 import org.bouncycastle.asn1.sec.SECNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.crypto.digests.MD5Digest;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -15,12 +9,14 @@ import org.bouncycastle.crypto.params.ParametersWithRandom;
 import org.bouncycastle.crypto.prng.FixedSecureRandom;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
-import org.bouncycastle.jcajce.util.MessageDigestUtils;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.encoders.Hex;
+
+import java.math.BigInteger;
+import java.security.SecureRandom;
 
 
 
@@ -52,7 +48,7 @@ public class Bouncycastle_Secp256k1 {
         ECDomainParameters params = new ECDomainParameters(p.getCurve(), p.getG(), p.getN(), p.getH());
         ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(new BigInteger(1, priv), params);
         SecureRandom rand = new FixedSecureRandom(k);
-        ECDSASigner dsa = new ECDSASigner();
+        ECDSASigner dsa = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         dsa.init(true, new ParametersWithRandom(priKey, rand));
         BigInteger[] sig = dsa.generateSignature(hash);
         return sig;
