@@ -63,7 +63,6 @@ public class Bouncycastle_Secp256k1 {
 //        System.out.println(pub[0].toString(16));
 //        System.out.println(pub[1].toString(16));
 //        System.out.println("04" + pub[0].toString(16) + pub[1].toString(16));
-        System.out.println(pub);
         ECPublicKeyParameters pubKey = new ECPublicKeyParameters(params.getCurve().decodePoint(Hex.decode(pub)), params);
         dsa.init(false, pubKey);
         if (dsa.verifySignature(hash, sig[0], sig[1])) return true;
