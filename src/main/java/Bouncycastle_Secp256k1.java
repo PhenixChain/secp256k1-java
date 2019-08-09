@@ -32,7 +32,9 @@ import java.security.SecureRandom;
 
 public class Bouncycastle_Secp256k1 {
 
-
+    private static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
+    static final ECDomainParameters CURVE = new ECDomainParameters(
+            CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
     /**
      * Es wird eine Signatur erstellt bestehend aus den Teilen "r" und "s".
      * Übergeben wird der 32byte lange Hash, der signiert werden soll,
@@ -44,29 +46,28 @@ public class Bouncycastle_Secp256k1 {
      */
     public static BigInteger[] sig(byte[] hash, byte[] priv, byte[] k) {
         k = Secp256k1.to_fixLength(k, 32);
-        X9ECParameters p = SECNamedCurves.getByName("secp256k1");
-        ECDomainParameters params = new ECDomainParameters(p.getCurve(), p.getG(), p.getN(), p.getH());
-        ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(new BigInteger(1, priv), params);
+
+        ECPrivateKeyParameters priKey = new ECPrivateKeyParameters(new BigInteger(1,priv), CURVE);
+        ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         SecureRandom rand = new FixedSecureRandom(k);
-        ECDSASigner dsa = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
-        dsa.init(true, new ParametersWithRandom(priKey, rand));
-        BigInteger[] sig = dsa.generateSignature(hash);
+        signer.init(true, new ParametersWithRandom(priKey, rand));
+        BigInteger[] sig = signer.generateSignature(hash);
         return sig;
     }
 
 
 
     public static boolean verify(byte[] hash, BigInteger[] sig, String pub) {
-        X9ECParameters p = SECNamedCurves.getByName("secp256k1");
-        ECDomainParameters params = new ECDomainParameters(p.getCurve(), p.getG(), p.getN(), p.getH());
-        ECDSASigner dsa = new ECDSASigner();
-//        System.out.println(pub[0].toString(16));
-//        System.out.println(pub[1].toString(16));
-//        System.out.println("04" + pub[0].toString(16) + pub[1].toString(16));
-        ECPublicKeyParameters pubKey = new ECPublicKeyParameters(params.getCurve().decodePoint(Hex.decode(pub)), params);
-        dsa.init(false, pubKey);
-        if (dsa.verifySignature(hash, sig[0], sig[1])) return true;
-        else return false;
+
+        ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
+
+        ECPublicKeyParameters pubKey = new ECPublicKeyParameters(CURVE.getCurve().decodePoint(Hex.decode(pub)), CURVE);
+        signer.init(false, pubKey);
+        if (signer.verifySignature(hash, sig[0], sig[1])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 
@@ -97,10 +98,6 @@ public class Bouncycastle_Secp256k1 {
         return erg;
     }
 
-
-    private static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
-    static final ECDomainParameters CURVE =
-            new ECDomainParameters(CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
 
 
     /**
